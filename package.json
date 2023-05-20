@@ -1,0 +1,29 @@
+{
+    "name": "zesha.io-video-api",
+    "version": "1.0.0",
+    "description": "",
+    "main": "index.js",
+    "scripts": {
+        "test": "echo \"Error: no test specified\" && exit 1"
+    },
+    "author": "",
+    "license": "ISC",
+    "dependencies": {
+        "@aws-sdk/client-s3": "^3.335.0",
+        "@aws-sdk/s3-request-presigner": "^3.335.0",
+        "body-parser": "^1.20.2",
+        "cors": "^2.8.5",
+        "dotenv": "^16.0.3",
+        "express": "^4.18.2",
+        "ffmpeg-extract-frames": "^2.0.2",
+        "ffmpeg-static": "^5.1.0",
+        "ffprobe-static": "^3.1.0",
+        "fluent-ffmpeg": "^2.1.2",
+        "multer": "^1.4.5-lts.1",
+        "node-fetch": "^2.6.11",
+        "node-fetch-commonjs": "^3.2.4",
+        "request": "^2.88.2",
+        "slugify": "^1.6.6",
+        "uuid": "^9.0.0"
+    }
+}
