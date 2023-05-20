@@ -58,6 +58,10 @@ const s3Client = new S3Client({
 
 const type = upload.single("video");
 
+app.get("/api/healthz", type, async (req, res) => {
+    res.status(200).json({ status: "ok" });
+});
+
 app.post("/api/space-upload", type, async (req, res) => {
     const { namespace } = req.body;
 
@@ -211,5 +215,5 @@ app.get("/api/video-transcoding-status", type, async (req, res) => {
 });
 
 app.listen(port, () => {
-    console.log(`Example app listening on port ${port}`);
+    console.log(`Zesha video api listening on port ${port}`);
 });
