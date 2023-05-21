@@ -22,7 +22,7 @@ const ffmpeg = require("fluent-ffmpeg");
 
 require("dotenv").config();
 
-const port = 8090;
+const port = process.env.PORT || 8090;
 
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
