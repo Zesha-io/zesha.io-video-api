@@ -13,6 +13,13 @@ const {
 const { getSignedUrl } = require("@aws-sdk/s3-request-presigner");
 const multer = require("multer");
 const upload = multer({ dest: "tmp/" });
+const storageEngine = multer.diskStorage({
+    destination: "./public",
+    filename: (req, file, cb) => {
+        cb(null, `thumbnail-${uuidv4()}.jpg`);
+    },
+});
+
 const uuidv4 = require("uuid").v4;
 const slugify = require("slugify");
 const fs = require("fs");
@@ -28,9 +35,6 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(express.static("public"));
 
-console.log(staticFFMPEG);
-console.log(staticFfmprobe);
-
 ffmpeg.setFfmpegPath(staticFFMPEG);
 ffmpeg.setFfprobePath(staticFfmprobe);
 
@@ -38,7 +42,19 @@ ffmpeg.setFfprobePath(staticFfmprobe);
 //     origin: process.env.ZESHA_WEB_URL,
 //     optionsSuccessStatus: 200,
 // };
+
 // app.use(cors(corsOptions));
+
+// var allowlist = ["http://localhost:3000"];
+// var corsOptionsDelegate = function (req, callback) {
+//     var corsOptions;
+//     if (allowlist.indexOf(req.header("Origin")) !== -1) {
+//         corsOptions = { origin: true }; // reflect (enable) the requested origin in the CORS response
+//     } else {
+//         corsOptions = { origin: false }; // disable CORS for this request
+//     }
+//     callback(null, corsOptions); // callback expects two parameters: error and options
+// };
 
 app.all("*", function (req, res, next) {
     res.header("Access-Control-Allow-Origin", "*");
@@ -90,7 +106,7 @@ app.post("/api/space-upload", type, async (req, res) => {
     }
 });
 
-app.post("/api/generate-signed-url", type, async (req, res) => {
+app.post("/api/generate-signed-url", async (req, res) => {
     const { key, namespace } = req.body;
 
     const bucketParams = {
@@ -102,7 +118,7 @@ app.post("/api/generate-signed-url", type, async (req, res) => {
         const url = await getSignedUrl(
             s3Client,
             new GetObjectCommand(bucketParams),
-            { expiresIn: 2 * 60 * 60 }
+            { expiresIn: 48 * 60 * 60 }
         ); // 1hr expiration.
 
         return res.status(200).json({ url });
@@ -114,7 +130,7 @@ app.post("/api/generate-signed-url", type, async (req, res) => {
 
 //@Todo: Clean up tmp files
 //Thumbnail & Length
-app.post("/api/get-video-metadata", type, async (req, res) => {
+app.post("/api/get-video-metadata", async (req, res) => {
     const { url } = req.body;
 
     const name = `thumbnail-${uuidv4()}.jpg`;
@@ -147,7 +163,8 @@ app.post("/api/get-video-metadata", type, async (req, res) => {
     }
 });
 
-app.post("/api/upload-video-to-theta", type, async (req, res) => {
+app.post("/api/upload-video-to-theta", async (req, res) => {
+    console.log(req.body);
     const { url, nft_collection } = req.body;
 
     try {
@@ -168,7 +185,7 @@ app.post("/api/upload-video-to-theta", type, async (req, res) => {
         const data = await result.json();
 
         if (!result.ok) {
-            console.log(data.error);
+            console.log(data);
 
             return res.status(500).json({ error: data.error });
         }
@@ -180,7 +197,7 @@ app.post("/api/upload-video-to-theta", type, async (req, res) => {
     }
 });
 
-app.get("/api/video-transcoding-status", type, async (req, res) => {
+app.get("/api/video-transcoding-status", async (req, res) => {
     const { video_id } = req.query;
 
     try {
@@ -213,6 +230,39 @@ app.get("/api/video-transcoding-status", type, async (req, res) => {
         res.status(500).json({ error: "Cannot get video encoding status" });
     }
 });
+
+app.post(
+    "/api/upload-thumbnail",
+    upload.single("thumbnail"),
+    async (req, res) => {
+        const thumbnail = req.file;
+        if (!thumbnail) {
+            return response.status(400).json({
+                error: "No thumbnail file found",
+            });
+        }
+
+        const name = `thumbnail-${uuidv4()}.jpg`;
+        const thumbnailPath = `./public/${name}`;
+
+        try {
+            console.log(thumbnail.path);
+            fs.copyFile(thumbnail.path, thumbnailPath, (err) => {
+                if (err) {
+                    console.log(err);
+                    return res
+                        .status(500)
+                        .json({ error: "Error uploading thumbnail" });
+                } else {
+                    return res.status(200).json({ name });
+                }
+            });
+        } catch (error) {
+            console.log(error);
+            res.status(500).json({ error: "Error uploading video " });
+        }
+    }
+);
 
 app.listen(port, () => {
     console.log(`Zesha video api listening on port ${port}`);
