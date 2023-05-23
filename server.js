@@ -13,12 +13,12 @@ const {
 const { getSignedUrl } = require("@aws-sdk/s3-request-presigner");
 const multer = require("multer");
 const upload = multer({ dest: "tmp/" });
-const storageEngine = multer.diskStorage({
-    destination: "./public",
-    filename: (req, file, cb) => {
-        cb(null, `thumbnail-${uuidv4()}.jpg`);
-    },
-});
+// const storageEngine = multer.diskStorage({
+//     destination: "./public",
+//     filename: (req, file, cb) => {
+//         cb(null, `thumbnail-${uuidv4()}.jpg`);
+//     },
+// });
 
 const uuidv4 = require("uuid").v4;
 const slugify = require("slugify");
