@@ -13,12 +13,6 @@ const {
 const { getSignedUrl } = require("@aws-sdk/s3-request-presigner");
 const multer = require("multer");
 const upload = multer({ dest: "tmp/" });
-// const storageEngine = multer.diskStorage({
-//     destination: "./public",
-//     filename: (req, file, cb) => {
-//         cb(null, `thumbnail-${uuidv4()}.jpg`);
-//     },
-// });
 
 const uuidv4 = require("uuid").v4;
 const slugify = require("slugify");
@@ -38,12 +32,12 @@ app.use(express.static("public"));
 ffmpeg.setFfmpegPath(staticFFMPEG);
 ffmpeg.setFfprobePath(staticFfmprobe);
 
-// const corsOptions = {
-//     origin: process.env.ZESHA_WEB_URL,
-//     optionsSuccessStatus: 200,
-// };
+const corsOptions = {
+    origin: process.env.ZESHA_WEB_URL,
+    optionsSuccessStatus: 200,
+};
 
-// app.use(cors(corsOptions));
+app.use(cors(corsOptions));
 
 // var allowlist = ["http://localhost:3000"];
 // var corsOptionsDelegate = function (req, callback) {
